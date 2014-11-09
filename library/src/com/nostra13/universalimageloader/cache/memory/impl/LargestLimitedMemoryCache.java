@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2011-2013 Sergey Tarasevich
+ * Copyright 2011-2014 Sergey Tarasevich
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.Set;
 
 /**
  * Limited {@link Bitmap bitmap} cache. Provides {@link Bitmap bitmaps} storing. Size of all stored bitmaps will not to
- * exceed size limit. When cache reaches limit size then the bitmap which used the least frequently is deleted from
+ * exceed size limit. When cache reaches limit size then the bitmap which has the largest size is deleted from
  * cache.<br />
  * <br />
  * <b>NOTE:</b> This cache uses strong and weak references for stored Bitmaps. Strong references - for limited count of
@@ -37,10 +37,10 @@ import java.util.Set;
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  * @since 1.0.0
  */
-public class LargestLimitedMemoryCache extends LimitedMemoryCache<String, Bitmap> {
+public class LargestLimitedMemoryCache extends LimitedMemoryCache {
 	/**
-	 * Contains strong references to stored objects (keys) and last object usage date (in milliseconds). If hard cache
-	 * size will exceed limit then object with the least frequently usage is deleted (but it continue exist at
+	 * Contains strong references to stored objects (keys) and sizes of the objects. If hard cache
+	 * size will exceed limit then object with the largest size is deleted (but it continue exist at
 	 * {@link #softMap} and can be collected by GC at any time)
 	 */
 	private final Map<Bitmap, Integer> valueSizes = Collections.synchronizedMap(new HashMap<Bitmap, Integer>());
@@ -60,12 +60,12 @@ public class LargestLimitedMemoryCache extends LimitedMemoryCache<String, Bitmap
 	}
 
 	@Override
-	public void remove(String key) {
+	public Bitmap remove(String key) {
 		Bitmap value = super.get(key);
 		if (value != null) {
 			valueSizes.remove(value);
 		}
-		super.remove(key);
+		return super.remove(key);
 	}
 
 	@Override
